@@ -1,4 +1,4 @@
-# Modern Parking System
+# Smart Parking
 
 An automated parking management system built for the Kenyan market. Drivers
 can see live slot availability before entry, vehicle entry and exit are
