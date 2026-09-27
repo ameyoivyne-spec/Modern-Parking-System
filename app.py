@@ -2,12 +2,14 @@ import os
 from datetime import datetime, date as date_cls
 
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from dotenv import load_dotenv
 
 from db import get_connection
 
 load_dotenv()
 app = Flask(__name__)
+CORS(app)
 
 def audit(cur, action, username="system"):
     cur.execute(
@@ -18,7 +20,7 @@ def audit(cur, action, username="system"):
 def fee_for_duration(cur, minutes):
     cur.execute(
         "SELECT * FROM tariff WHERE %s BETWEEN min_minutes AND max_minutes LIMIT 1",
-        (minutes, minutes),
+        (minutes,),
     )
     band = cur.fetchone()
     if band:
@@ -100,6 +102,7 @@ def active_ticket(plate):
             if not ticket:
                 return jsonify({"error": "Vehicle not found or has no active ticket"}), 404
             band = fee_for_duration(cur, ticket["duration_minutes"])
+            ticket["entry_time"] = ticket["entry_time"].isoformat()
         return jsonify({ **ticket, "fee": float(band["fee"]), "tariff_band_id": band["tariff_band_id"], "description": band["description"],})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -110,7 +113,7 @@ def active_ticket(plate):
 @app.post("/api/exit/<int:ticket_id>/pay")
 def pay_and_exit(ticket_id):
     data = request.get_json(silent=True) or {}
-    Cash_input = data.get("amount_paid")
+    cash_input = data.get("amount_paid")
     method = data.get("method")
 
     conn = get_connection()
@@ -142,7 +145,7 @@ def pay_and_exit(ticket_id):
                 conn.rollback()
                 return jsonify({"error": "Invalid payment method"}), 400
            
-            cur.execute("INSERT INTO payments (ticket_id, tariff_band_id, duration, fee, amount_paid, used_method, payment_time) VALUES (%s, %s, %s, %s, %s, %s, NOW())", (ticket_id, band["tariff_band_id"], minutes, amount_due, amount_paid, method),)
+            cur.execute("INSERT INTO payments (ticket_id, tariff_band_id, duration, amount_due, amount_paid, method, payment_time) VALUES (%s, %s, %s, %s, %s, %s, NOW())", (ticket_id, band["tariff_band_id"], minutes, fee, amount_paid, used_method),)
             # Update ticket and slot status to reflect payment and exit
             cur.execute("UPDATE tickets SET tickets_status = 'CLOSED', exit_time = NOW() WHERE ticket_id = %s", (ticket_id,))
             cur.execute("UPDATE parking_slots SET slot_status = 'FREE' WHERE slot_id = %s", (ticket["slot_id"],))
@@ -174,6 +177,8 @@ def admin_summary():
         with conn.cursor() as cur:
             cur.execute("SELECT COALESCE(method, 'FREE') AS method, SUM(amount_paid) AS revenue FROM payments WHERE DATE(payment_time) = %s GROUP BY method", (report_date,),)
             revenue  = cur.fetchall()
+            for r in revenue:
+                r["revenue"] = float(r["revenue"]) if r["revenue"] is not None else 0.0
 
             cur.execute("SELECT COUNT(*) AS c FROM tickets WHERE DATE(entry_time) = %s", (report_date,))
             vehicles_summary = cur.fetchone()["c"]
@@ -190,6 +195,31 @@ def admin_summary():
             "vehicles_summary": vehicles_summary,
             "occupancy_rate": occupancy_rate,
         })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        conn.close()
+
+@app.get("/api/admin/recent-exits")
+def recent_exits():
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """SELECT v.plate_number AS plate, ps.slot_no, t.exit_time, p.amount_paid AS fee
+                   FROM tickets t
+                   JOIN vehicles v ON v.vehicle_id = t.vehicle_id
+                   JOIN parking_slots ps ON ps.slot_id = t.slot_id
+                   LEFT JOIN payments p ON p.ticket_id = t.ticket_id
+                   WHERE t.tickets_status = 'CLOSED'
+                   ORDER BY t.exit_time DESC
+                   LIMIT 8"""
+            )
+            rows = cur.fetchall()
+            for r in rows:
+                r["exit_time"] = r["exit_time"].isoformat() if r["exit_time"] else None
+                r["fee"] = float(r["fee"]) if r["fee"] is not None else 0.0
+        return jsonify({"exits": rows})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:

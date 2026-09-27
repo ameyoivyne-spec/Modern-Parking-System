@@ -1,344 +1,314 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Parking System</title>
-        <style>
-            :root {
-                --bg:#f6f7f5; --panel:#ffffff; --ink:#16201c; --muted:#5b6b62; --line:#dfe6e0; --accent:#0f7a4a; --accent-ink:#ffffff; --free:#1f9d55; --occ:#c2452b; --warn:#b8860b; --radius:10px;
-                box-sizing:border-box;
-                padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); padding-bottom:env(safe-area-inset-left,0px);
-            }
-            @media (prefers-color-scheme: dark) {
-                :root:not([data-theme="light"]) {
-                    --bg:#121512; --panel:#1a1f1b; --ink:#e7ece8; --muted:#93a39a; --line:#2a322c; --accent:#2fbf74; --accent-ink:#08130d; --free:#2fbf74; --occ:#e5644b; --warn:#e0b04a;
-                }
-            }
-            :root[data-theme="dark"] {
-                --bg:#121512; --panel:#1a1f1b; --ink:#e7ece8; --muted:#93a39a; --line:#2a322c; --accent:#2fbf74; --accent-ink:#08130d; --free:#2fbf74; --occ:#e5644b; --warn:#e0b04a;
-            }
-            html{scroll-padding-top:env(safe-area-inset-top,0px); height:100%;}
-            *{box-sizing:border-box;}
-            body{height:100%; margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;}
-            header{position:sticky; top:0; top:env(safe-area-inset-top,0px); background:var(--panel); border-bottom:1px solid var(--line);padding:14px 16px; z-index:5;}
-            header h1{margin:0; font-size:18px; font-weight:600;}
-            header p{margin:4px 0 0; font-size:13px; color:var(--muted);}
-            nav{display:flex; gap:6px; overflow-x:auto; padding: 8px 16px; background:var(--panel); border-bottom:1px solid var(--line);}
-            nav button{border:1px solid var(--line); background:transparent; color:var(--ink); padding:6px 12px; border-radius:999px; cursor:pointer; font-size:14px; white-space:nowrap;}
-            nav button.active{background:var(--accent); color:var(--accent-ink); border-color:var(--accent);}
-            main{max-width: 760px; margin:0 auto; padding:16px; padding-bottom:calc(40px + env(safe-area-inset-bottom,0px));}
-            .card{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:16px; margin-bottom:14px;}
-            .card h2{margin:0 0 10px; font-size:16px;}
-            .row{display:flex; flex-wrap:wrap; gap:10px;}
-            label{display:block; font-size:13px; color:var(--muted); margin-bottom:4px;}
-            input, select{width:100%; padding:9px 10px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--ink); font-size:14px;}
-            .field{flex:1; min-width:120px; margin-bottom:10px;}
-            button.btn{border:none; background:var(--accent); color:var(--accent-ink); padding:10px 16px; border-radius:8px; cursor:pointer; font-size:14px; font-weight:600;}
-            button.btn.secondary{background:transparent; color:var(--ink); border:1px solid var(--line); font-weight:500;}
-            button.btn:disabled{opacity:.5; cursor:not-allowed;}
-            .msg{padding:10px 12px; border-radius:8px; margin-top:10px; font-size:14px;}
-            .msg.ok{background:rgba(31,157,85,.12); color:var(--free); border:1px solid rgba(31,157,85,.3);}
-            .msg.err{background:rgba(194,69,43,.12); color:var(--occ); border:1px solid rgba(194,69,43,.3);}
-            .stat-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(120px, 1fr)); gap:10px; margin-bottom:4px;}
-            .stat{background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:10px;}
-            .stat .num{font-size:22px; font-weight:700;}
-            .stat .lbl{font-size:12px; color:var(--muted);}
-            .zone{margin-bottom:14px;}
-            .zone h3{margin:0 0 6px; font-size:13px; color:var(--muted); text-transform:uppercase; letter-spacing:.03em;}
-            .slots{display:grid; grid-template-columns:repeat(auto-fill, minmax(52px, 1fr)); gap:6px;}
-            .slot{aspect-ratio:1; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:600; color:#fff;}
-            .slot.free{background:var(--free);}
-            .slot.occ{background:var(--occ);}
-            table{width:100%; border-collapse:collapse; font-size:13px;}
-            th, td{text-align:left; padding:8px 10px; border-bottom:1px solid var(--line);}
-            th{color:var(--muted); font-weight:600; font-size:12px;}
-            .ticket{border:1px dashed var(--line); border-radius:8px; padding:12px; margin-top:10px; font-size:14px;}
-            .ticket div{margin-bottom:3px;}
-            .overflow{overflow-x:auto;}
-            .hint{font-size:12px; color:var(--muted); margin-top:4px;}
-        </style>
-    </head>
-    <body>
-        <header>
-            <h1>Modern Parking System</h1>
-            <p>Manage your parking spaces efficiently</p>
-        </header>
-        <nav id="nav"></nav>
-        <main id="main"></main>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Parking System</title>
+<style>
+:root{
+  --bg:#f6f7f5; --panel:#ffffff; --ink:#16201c; --muted:#5b6b62; --line:#dfe6e0;
+  --accent:#0f7a4a; --accent-ink:#ffffff; --free:#1f9d55; --occ:#c2452b; --warn:#b8860b;
+  --radius:10px;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121512; --panel:#1a1f1b; --ink:#e7ece8; --muted:#93a39a; --line:#2a322c;
+    --accent:#2fbf74; --accent-ink:#08130d; --free:#2fbf74; --occ:#e5644b; --warn:#e0b04a;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121512; --panel:#1a1f1b; --ink:#e7ece8; --muted:#93a39a; --line:#2a322c;
+  --accent:#2fbf74; --accent-ink:#08130d; --free:#2fbf74; --occ:#e5644b; --warn:#e0b04a;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px); height:100%;}
+*{box-sizing:border-box;}
+body{height:100%; margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;}
+header{position:sticky; top:0; top:env(safe-area-inset-top,0px); background:var(--panel); border-bottom:1px solid var(--line); padding:14px 16px; z-index:5;}
+header h1{margin:0; font-size:18px; font-weight:600;}
+header p{margin:4px 0 0; font-size:13px; color:var(--muted);}
+#conn-badge{display:inline-block; margin-top:6px; font-size:11.5px; padding:2px 8px; border-radius:999px; border:1px solid var(--line);}
+#conn-badge.ok{color:var(--free); border-color:var(--free);}
+#conn-badge.err{color:var(--occ); border-color:var(--occ);}
+nav{display:flex; gap:6px; overflow-x:auto; padding:8px 16px; background:var(--panel); border-bottom:1px solid var(--line);}
+nav button{border:1px solid var(--line); background:transparent; color:var(--ink); padding:6px 12px; border-radius:999px; cursor:pointer; font-size:14px; white-space:nowrap;}
+nav button.active{background:var(--accent); color:var(--accent-ink); border-color:var(--accent);}
+main{max-width:760px; margin:0 auto; padding:16px; padding-bottom:calc(40px + env(safe-area-inset-bottom,0px));}
+.card{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:16px; margin-bottom:14px;}
+.card h2{margin:0 0 10px; font-size:16px;}
+.row{display:flex; flex-wrap:wrap; gap:10px;}
+label{display:block; font-size:13px; color:var(--muted); margin-bottom:4px;}
+input,select{width:100%; padding:9px 10px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--ink); font-size:14px;}
+.field{flex:1; min-width:120px; margin-bottom:10px;}
+button.btn{border:none; background:var(--accent); color:var(--accent-ink); padding:10px 16px; border-radius:8px; cursor:pointer; font-size:14px; font-weight:600;}
+button.btn.secondary{background:transparent; color:var(--ink); border:1px solid var(--line); font-weight:500;}
+button.btn:disabled{opacity:.5; cursor:not-allowed;}
+.msg{padding:10px 12px; border-radius:8px; margin-top:10px; font-size:14px;}
+.msg.ok{background:rgba(31,157,85,.12); color:var(--free); border:1px solid rgba(31,157,85,.3);}
+.msg.err{background:rgba(194,69,43,.12); color:var(--occ); border:1px solid rgba(194,69,43,.3);}
+.stat-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:10px; margin-bottom:4px;}
+.stat{background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:10px;}
+.stat .num{font-size:22px; font-weight:700;}
+.stat .lbl{font-size:12px; color:var(--muted);}
+.zone{margin-bottom:14px;}
+.zone h3{margin:0 0 6px; font-size:13px; color:var(--muted); text-transform:uppercase; letter-spacing:.03em;}
+.slots{display:grid; grid-template-columns:repeat(auto-fill,minmax(52px,1fr)); gap:6px;}
+.slot{aspect-ratio:1; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:600; color:#fff;}
+.slot.free{background:var(--free);}
+.slot.occ{background:var(--occ);}
+table{width:100%; border-collapse:collapse; font-size:13px;}
+th,td{text-align:left; padding:8px 10px; border-bottom:1px solid var(--line);}
+th{color:var(--muted); font-weight:600; font-size:12px;}
+.ticket{border:1px dashed var(--line); border-radius:8px; padding:12px; margin-top:10px; font-size:14px;}
+.ticket div{margin-bottom:3px;}
+.overflow{overflow-x:auto;}
+.hint{font-size:12px; color:var(--muted); margin-top:4px;}
+.spinner{color:var(--muted); font-size:14px; padding:8px 0;}
+</style>
+</head>
+<body>
+<header>
+  <h1>Modern Parking System</h1>
+  <p>Manage your parking spaces efficiently</p>
+  <div id="conn-badge">Connecting…</div>
+</header>
+<nav id="nav"></nav>
+<main id="main"></main>
 
-        <script>
-            // simulate the SQL schema in database.sql
-            const TARIFF = [//Module 4: loaded as an array, scanned linearly (mirrors the 'tariff' table)
-            {min:0, max:30, fee:0, desc:'Up to 30 minutes (FREE)'},
-            {min:31, max:120, fee:50.00, desc:'31 minutes to 2 hours'},
-            {min:121, max:240, fee:100.00, desc:'Over 2 hours to 4 hours'},
-            {min:241, max:360, fee:300.00, desc:'Over 4 hours to 6 hours'},
-            {min:361, max:99999, fee:500.00, desc:'Over 6 hours'},
-        ];
-        const ZONES = ['A', 'B', 'C', 'D'];
-        const KEY = 'parking_system';
-
-        function loadState(){
-            try{
-                const raw = localStorage.getItem(KEY);
-                if(raw) return JSON.parse(raw);
-            }catch(e){console.warn('storage read failed', e);}
-            const slots = [];
-            ZONES.forEach(z => { for(let i=1; i<=10;i++) slots.push({no:z+i, zone:z, status:'FREE'});});
-            return { slots, tickets:[], payments:[], queue:[], exitedArchive:[], nextTicketId:1};
-        }
-        function saveState(){
-            try{ localStorage.setItem(KEY, JSON.stringify(state));}catch(e){ console.warn('storage write failed', e);}
-        }
-        let state = loadState();
-
-        // Module 3: slot allocation
-        function allocateSlot(){
-            const free = state.slots.filter(s=>s.status==='FREE').sort((a,b)=>a.no.localeCompare(b.no,undefined,{numeric:true}));
-            return free.length ? free[0] : null;
-        }
-
-        // Module2: Vehicle entry
-        function findActiveTicket(plate){
-            return state.tickets.find(t => t.plate.toUpperCase()===plate.toUpperCase() && t.status==='ACTIVE');
-        }
-        function enterVehicle(plate, vtype, phone){
-            plate = plate.trim().toUpperCase();
-            if(!plate) return {ok:false, msg:'Enter a plate number.'};
-            if(findActiveTicket(plate)) return {ok:false, msg:'Vehicle already inside.'};
-            const slot = allocateSlot();
-            if(!slot){
-                if(!state.queue.includes(plate)) state.queue.push(plate);
-                saveState();
-                return {ok:false, msg:`Parking full - ${plate} added to the waiting queue (position ${state.queue.length}).`};
-            }
-            slot.status='OCCUPIED';
-            const ticket = { id: state.nextTicketId++, plate, vtype: vtype||'-', phone: phone||'-', slot:slot.no, zone:slot.zone, entry: Date.now(), status:'ACTIVE'};
-            state.tickets.push(ticket);
-            saveState();
-            return {ok:true, ticket};
-        }
-        function computeFee(ticket, overrideMinutes){
-            const mins = overrideMinutes!=null ? overrideMinutes : Math.max(0, Math.round((Date.now()-ticket.entry)/60000));
-            const band = TARIFF.find(b => mins>=b.min && mins<=b.max) || TARIFF[TARIFF.length-1];
-            return { mins, fee:band.fee, band };
+<script>
+const API_BASE = 'http://127.0.0.1:3000';
+async function apiGet(path){
+  const res = await fetch(API_BASE + path);
+  let data;
+  try{ data = await res.json(); } catch(e){ data = {}; }
+  if(!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
+  return data;
+}
+async function apiPost(path, body){
+  const res = await fetch(API_BASE + path, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify(body||{}),
+  });
+  let data;
+  try{ data = await res.json(); } catch(e){ data = {}; }
+  if(!res.ok){ const err = new Error(data.error || `Request failed (${res.status})`); err.data = data; throw err; }
+  return data;
 }
 
-        // Module 5+6: Payment and barrier
-        function settle(ticket, mins, fee, method, amountPaid){
-            ticket.status='CLOSED';
-            const slot = state.slots.find(s=>s.no===ticket.slot);
-            if(slot) slot.status='FREE';
-            state.payments.push({ticketId:ticket.id, plate:ticket.plate, mins, fee, method, amountPaid, time:Date.now()});
-            state.exitedArchive.unshift({ plate:ticket.plate, slot:ticket.slot, exit:Date.now(), fee});
-            let notified = null;
-            if(fee>0 ? amountPaid>=fee : true){
-                if(state.queue.length){ notified = state.queue.shift();}
-            }
-            saveState();
-            return notified;
-            }
+async function checkConnection(){
+  const badge = document.getElementById('conn-badge');
+  try{
+    await apiGet('/api/slots');
+    badge.textContent = 'Connected to backend'; badge.className = 'ok';
+  }catch(e){
+    badge.textContent = 'Backend unreachable — is app.py running on ' + API_BASE + '?';
+    badge.className = 'err';
+  }
+}
 
-        // Routing
-        const TABS = [['slots', 'Slots'], ['entry', 'Entry'], ['exit', 'Exit & Payment'], ['admin', 'Admin']];
-        let active = 'slots';
-        function setActive(id){ active=id; render();}
+// Routing 
+const TABS = [['slots','Slots'],['entry','Entry'],['exit','Exit & Payment'],['admin','Admin']];
+let active = 'slots';
+function setActive(id){ active=id; render(); }
 
-        function render(){
-            const nav = document.getElementById('nav');
-            nav.innerHTML='';
-            TABS.forEach(([id,label])=>{
-                const b=document.createElement('button');
-                b.textContent=label; b.className= id===active?'active':'';
-                b.onclick=()=>setActive(id);
-                nav.appendChild(b);
-            });
-            const main = document.getElementById('main');
-            main.innerHTML = {slots:renderSlots, entry:renderEntry, exit:renderExit, admin:renderAdmin}[active]();
-            wireEvents();
-        }
+async function render(){
+  const nav = document.getElementById('nav');
+  nav.innerHTML = '';
+  TABS.forEach(([id,label])=>{
+    const b = document.createElement('button');
+    b.textContent = label; b.className = id===active ? 'active' : '';
+    b.onclick = () => setActive(id);
+    nav.appendChild(b);
+  });
+  const main = document.getElementById('main');
+  main.innerHTML = '<div class="spinner">Loading…</div>';
+  try{
+    const html = await {slots:renderSlots, entry:renderEntry, exit:renderExit, admin:renderAdmin}[active]();
+    main.innerHTML = html;
+    wireEvents();
+  }catch(e){
+    main.innerHTML = `<div class="card"><div class="msg err">Couldn't reach the backend: ${e.message}</div></div>`;
+  }
+  checkConnection();
+}
 
-        // Module 1 view
-        function renderSlots(){
-            const available = state.slots.filter(s=>s.status==='FREE').length;
-            let zonesHtml = ZONES.map(z=>{
-                const zs = state.slots.filter(s=>s.zone===z);
-                const free = zs.filter(s=>s.status==='FREE').length;
-                return `<div class="zone"><h3>Zone ${z} - ${free}/${zs.length} free</h3><div class="slots">
-                    ${zs.map(s=>`<div class="slot ${s.status==='FREE'?'free':'occ'}">${s.no}</div>`).join('')}
-                    </div></div>`;
-            }).join('');
-            return `<div class="card">
-                <h2>Slot availability</h2>
-                <div class="stat-grid">
-                    <div class="stat"><div class="num">${available}</div><div class="lbl">Available now</div></div>
-                    <div class="stat"><div class="num">${state.slots.length}</div><div class="lbl">Total slots</div></div>
-                    <div class="stat"><div class="num">${state.queue.length}</div><div class="lbl">Waiting queue</div></div>
-                </div>
-                <div class="card">${zonesHtml}</div>`; 
-        }
+// Module 1: Slot Availability Display 
+const ZONES = ['A','B','C','D'];
+async function renderSlots(){
+  const data = await apiGet('/api/slots'); // {available, total, slots:[{slot_no, slot_zone, slot_status}]}
+  const zonesHtml = ZONES.map(z=>{
+    const zs = data.slots.filter(s=>s.slot_zone===z);
+    const free = zs.filter(s=>s.slot_status==='FREE').length;
+    return `<div class="zone"><h3>Zone ${z} — ${free}/${zs.length} free</h3><div class="slots">
+      ${zs.map(s=>`<div class="slot ${s.slot_status==='FREE'?'free':'occ'}">${s.slot_no}</div>`).join('')}
+    </div></div>`;
+  }).join('');
+  return `<div class="card">
+    <h2>Slot availability</h2>
+    <div class="stat-grid">
+      <div class="stat"><div class="num">${data.available}</div><div class="lbl">Available now</div></div>
+      <div class="stat"><div class="num">${data.total}</div><div class="lbl">Total slots</div></div>
+    </div>
+  </div>
+  <div class="card">${zonesHtml}</div>`;
+}
 
-        // MOdule 2 + 3 view
-        function renderEntry(){
-            return `<div class="card">
-                <h2>Vehicle entry</h2>
-                <div class="row">
-                    <div class="field"><label>Plate number</label><input id="e_plate" placeholder="KDA 123A"></div>
-                    <div class="field"><label>Vehicle type</label><select id="e_type"><option>Car</option><option>Matatu</option><option>SUV</option><option>Motorbike</option><option>Truck</option></select></div>
-                    <div class="field"><label>Phone number</label><input id="e_phone" placeholder="07XXXXXXXX"></div>
-                </div>
-                <button class="btn" id="e_submit">Record entry</button>
-                <div id="e_result"></div>
-            </div>`;
-        }
+//  Module 2 + 3: Vehicle Entry + Slot Allocation 
+function renderEntry(){
+  return `<div class="card">
+    <h2>Vehicle entry</h2>
+    <div class="row">
+      <div class="field"><label>Plate number</label><input id="e_plate" placeholder="KDA 123A"></div>
+      <div class="field"><label>Vehicle type</label><select id="e_type"><option>Car</option><option>Matatu</option><option>SUV</option><option>Motorbike</option><option>Truck</option></select></div>
+      <div class="field"><label>Phone number</label><input id="e_phone" placeholder="07XXXXXXXX"></div>
+    </div>
+    <button class="btn" id="e_submit">Record entry</button>
+    <div id="e_result"></div>
+  </div>`;
+}
 
-        // Module 4+5+6 view
-        let exitTicket = null, exitFee = null;
-        function renderExit(){
-            let ticketHtml = '';
-            if(exitTicket){
-                ticketHtml = `<div class="ticket">
-                    <div><strong>&{exitTicket.plate}</strong> . Slot ${exitTicket.slot} (Zone ${exitTicket.zone})</div>
-                    <div>Entry: ${new Date(exitTicket.entry).toLocaleString()}</div>
-                    <div>Duration: ${exitFee.mins} min - ${exitFee.band.desc}</div>
-                    <div>Amount due: <strong>Ksh ${exitFee.fee}</strong></div>
-                </div>
-                <div class="hint">Demo override - set elapsed minutes to simulate a longer stay:</div>
-                <div class="row">
-                    <div class="field"><input id="x_override" type="number" min="0" placeholder="e.g. 150"></div>
-                    <div class="field"><button class="btn secondary" id="x_recalc">Recalculate</button></div>
-                </div>
-                ${exitFee.fee===0 ? `<button class="btn"id="x_free">Confirm free exit</button>`:`
-                <div class="row">
-                    <div class="field"><label>Payment method</label><select id="x_method"><option value="MPESA">M-Pesa (STK push)</option><option value="CASH">Cash</option></select></div>
-                    <div class="field" id="x_cash_wrap"><label>Cash received (Ksh)</label><input id="x_cash" type="number" min="0"></div>
-                </div>
-                <button class="btn" id="x_pay">Collect payment & open barrier</button>`}
-                <div id="x_result"></div>`;
-        }
-        return `<div class="card">
-            <h2>Exit - find vehicle</h2>
-            <div class="row">
-                <div class="field"><input id="x_plate" placeholder="Plate number"></div>
-                <div class="field"><button class="btn" id="x_find">Look up</button></div>
-            </div>
-            <div id="x_lookup_msg"></div>
-            ${ticketHtml}
-        </div>`;
-    }
+//  Module 4 + 5 + 6: Duration & Fee, Payment, Barrier 
+let exitTicket = null;
+function renderExit(){
+  let ticketHtml = '';
+  if(exitTicket){
+    const t = exitTicket;
+    ticketHtml = `<div class="ticket">
+      <div><strong>${t.plate}</strong> · Slot ${t.slot_no} (Zone ${t.slot_zone})</div>
+      <div>Entry: ${new Date(t.entry_time).toLocaleString()}</div>
+      <div>Duration: ${t.duration_minutes} min — ${t.description}</div>
+      <div>Amount due: <strong>Ksh ${t.fee}</strong></div>
+    </div>
+    ${t.fee===0 ? `<button class="btn" id="x_free">Confirm free exit</button>` : `
+    <div class="row">
+      <div class="field"><label>Payment method</label><select id="x_method"><option value="MPESA">M-Pesa (STK push)</option><option value="CASH">Cash</option></select></div>
+      <div class="field" id="x_cash_wrap"><label>Cash received (Ksh)</label><input id="x_cash" type="number" min="0"></div>
+    </div>
+    <button class="btn" id="x_pay">Collect payment & open barrier</button>`}
+    <div id="x_result"></div>`;
+  }
+  return `<div class="card">
+    <h2>Exit — find vehicle</h2>
+    <div class="row">
+      <div class="field"><input id="x_plate" placeholder="Plate number"></div>
+      <div class="field"><button class="btn" id="x_find">Look up</button></div>
+    </div>
+    <div id="x_lookup_msg"></div>
+    ${ticketHtml}
+  </div>`;
+}
 
-    // Module 7 view
-    function renderAdmin(){
-        const today = new Date().toDateString();
-        const todaysPayments = state.payments.filter(p=>new Date(p.time).toDateString()===today);
-        const revenueByMethod = {};
-        todaysPayments.forEach(p=>{ const m=p.method||'FREE'; revenueByMethod[m]=(revenueByMethod [m]||0)+p.amountPaid; });
-        const vehiclesToday = state.tickets.filter(t=>new Date(t.entry).toDateString()===today).length;
-        const occupied = state.slots.filter(s=>s.status==='OCCUPIED').length;
-        const occRate = ((occupied/state.slots.length)*100).toFixed(0);
-        const revRows = Object.keys(revenueByMethod).length
-          ? Object.entries(revenueByMethod).map(([m,v])=>`<tr><td>${m}</td><td>Ksh ${v}</td></tr>`).join('')
-          : `<tr><td colspan="2" style="color:var(--muted)">No exits yet</td></tr>`;
-        const recentExits= state.exitedArchive.slice(0,8).map(e=>`<tr><td>${e.plate}</td><td>${e.slot}</td><td>${new Date(e.exit).toLocaleTimeString()}</td><td>Ksh ${e.fee}</td></tr>`).join('')
-          || `<tr><td colspan="4" style="color:var(--muted)">No exits yet</td></tr>`;
-        return `<div class="card">
-            <h2>Today's summary</h2>
-            <div class="stat-grid">
-                <div class="stat"><div class="num">${vehiclesToday}</div><div class="lbl">Vehicle entered today</div></div>
-                <div class="stat"><div class="num">${occRate}%</div><div class="lbl">Occupancy rate</div></div>
-                <div class="stat"><div class="num">${state.queue.length}</div><div class="lbl">In waiting queue</div></div>
-            </div>
-        </div>
-        <div class="card"><h2>Revenue by payment method (today)</h2>
-            <div class="overflow"><table><thead><tr><th>Method</th><th>Revenue</th></tr></thead><tbody>${revRows}</tbody></table></div>
-        </div>
-                <div class="card"><h2>Recent exits</h2>
-            <div class="overflow"><table><thead><tr><th>Plate</th><th>Slot</th><th>Time</th><th>Fee</th></tr></thead><tbody>${recentExits}</tbody></table></div>
-        </div>
-        <div class="card"><button class="btn secondary" id="a_reset">Reset demo data</button></div>`;
-    }
-    
-    function wireEvents(){
-        if(active==='entry'){
-            document.getElementById('e_submit').onclick = () => {
-                const r = enterVehicle(document.getElementById('e_plate').value, document.getElementById('e_type').value, document.getElementById('e_phone').value);
-                const box = document.getElementById('e_result');
-                if(r.ok){
-                    box.innerHTML = `<div class="msg ok">Entry recorded.</div><div class="ticket">
-                        <div><strong>Ticket #${r.ticket.id}</strong></div>
-                        <div>${r.ticket.plate} . ${r.ticket.vtype}</div>
-                        <div>Slot ${r.ticket.slot} (Zone ${r.ticket.zone})</div>
-                        <div>Entry: ${new Date(r.ticket.entry).toLocaleString()}</div></div>`;
-                    document.getElementById('e_plate').value=''; document.getElementById('e_phone').value='';
-                } else {
-                    box.innerHTML = `<div class="msg err">${r.msg}</div>`;
-                }
-            };
-        }
-        if(active==='exit'){
-            document.getElementById('x_find').onclick = () => {
-                const plate = document.getElementById('x_plate').value.trim();
-                const t = findActiveTicket(plate);
-                const msg = document.getElementById('x_lookup_msg');
-                if(!t){msg.innerHTML = `<div class="msg err">No active ticket found for that plate.</div>`; exitTicket=null; render(); return;}
-                exitTicket = t; exitFee = computeFee(t);
-                render();
-            };
-            const cashWrap = document.getElementById('x_cash_wrap');
-            const methodSel = document.getElementById('x_method');
-            if(methodSel){
-                const toggle=()=>{ cashWrap.style.display = methodSel.value==='CASH' ? '' : 'none'; };
-                methodSel.onchange = toggle; toggle();
-            }
-            const recalc = document.getElementById('x_recalc');
-            if(recalc) recalc.onclick = () => {
-                const v = document.getElementById('x_override').value;
-                exitFee = computeFee(exitTicket, v===''?null:Number(v));
-                render();
-            };
-            const freeBtn = document.getElementById('x_free');
-            if(freeBtn) freeBtn.onclick = () => {
-                const notified = settle(exitTicket, exitFee.mins, 0, null, 0);
-                finishExit(notified);
-            };
-            const payBtn = document.getElementById('x_pay');
-            if(payBtn) payBtn.onclick = () => {
-                const method = document.getElementById('x_method').value;
-                const res = document.getElementById('x_result');
-                if(method==='MPESA'){
-                    res.innerHTML = `<div class="msg ok">STK push sent to ${exitTicket.phone}. Waiting for confirmation...</div>`;
-                    setTimeout(()=>{ //simulated Daraja callback
-                        const notified = settle(exitTicket, exitFee.mins, exitFee.fee, 'MPESA', exitFee.fee);
-                        finishExit(notified);
-                    }, 1200);
-                } else {
-                    const cash = Number(document.getElementById('x_cash').value||0);
-                    if(cash < exitFee.fee){ res.innerHTML = `<div class="msg err">Cash received is less than amount due. Payment rejected - barrier stays closed.</div>`; return; }
-                    const notified = settle(exitTicket, exitFee.mins, exitFee.fee, 'CASH', cash);
-                    const change = cash - exitFee.fee;
-                    finishExit(notified, change>0 ? `Change due: Ksh ${change}.` : '');
-                }
+// Module 7: Admin and Reporting 
+async function renderAdmin(){
+  const [summary, exits] = await Promise.all([
+    apiGet('/api/admin/summary'),
+    apiGet('/api/admin/recent-exits'),
+  ]);
+  const revRows = summary.revenue_by_method.length
+    ? summary.revenue_by_method.map(r=>`<tr><td>${r.method}</td><td>Ksh ${r.revenue}</td></tr>`).join('')
+    : `<tr><td colspan="2" style="color:var(--muted)">No payments recorded today</td></tr>`;
+  const exitRows = exits.exits.length
+    ? exits.exits.map(e=>`<tr><td>${e.plate}</td><td>${e.slot_no}</td><td>${new Date(e.exit_time).toLocaleTimeString()}</td><td>Ksh ${e.fee}</td></tr>`).join('')
+    : `<tr><td colspan="4" style="color:var(--muted)">No exits yet</td></tr>`;
+  return `<div class="card">
+    <h2>Today's summary</h2>
+    <div class="stat-grid">
+      <div class="stat"><div class="num">${summary.vehicles_summary}</div><div class="lbl">Vehicles entered today</div></div>
+      <div class="stat"><div class="num">${summary.occupancy_rate}%</div><div class="lbl">Occupancy rate</div></div>
+    </div>
+  </div>
+  <div class="card"><h2>Revenue by payment method (today)</h2>
+    <div class="overflow"><table><thead><tr><th>Method</th><th>Revenue</th></tr></thead><tbody>${revRows}</tbody></table></div>
+  </div>
+  <div class="card"><h2>Recent exits</h2>
+    <div class="overflow"><table><thead><tr><th>Plate</th><th>Slot</th><th>Time</th><th>Fee</th></tr></thead><tbody>${exitRows}</tbody></table></div>
+  </div>
+  <div class="card"><button class="btn secondary" id="a_refresh">Refresh</button></div>`;
+}
 
-            };
+// Event wiring 
+function wireEvents(){
+  if(active==='entry'){
+    document.getElementById('e_submit').onclick = async () => {
+      const box = document.getElementById('e_result');
+      const plate = document.getElementById('e_plate').value;
+      const vtype = document.getElementById('e_type').value;
+      const phone = document.getElementById('e_phone').value;
+      box.innerHTML = `<div class="spinner">Recording entry…</div>`;
+      try{
+        const r = await apiPost('/api/entry', {plate_number:plate, vehicle_type:vtype, phone_number:phone});
+        if(r.queued){
+          box.innerHTML = `<div class="msg err">${r.message} (position ${r.position})</div>`;
+        } else {
+          box.innerHTML = `<div class="msg ok">Entry recorded.</div><div class="ticket">
+            <div><strong>Ticket #${r.ticket_id}</strong></div>
+            <div>${r.plate}</div>
+            <div>Slot ${r.slot_no} (Zone ${r.slot_zone})</div>
+            <div>Entry: ${new Date(r.entry_time).toLocaleString()}</div></div>`;
+          document.getElementById('e_plate').value=''; document.getElementById('e_phone').value='';
         }
-        if(active==='admin'){
-            document.getElementById('a_reset').onclick = () => {
-                if(confirm('Reset all slots, tickets and payments?')){
-                    try{ localStorage.removeItem(KEY); }catch(e){}
-                    state = loadState(); saveState(); render();
-                }
-            };
-        }
-    }
-    function finishExit(notified, extra){
-        exitTicket = null; exitFee = null;
+      }catch(e){
+        box.innerHTML = `<div class="msg err">${e.message}</div>`;
+      }
+    };
+  }
+  if(active==='exit'){
+    document.getElementById('x_find').onclick = async () => {
+      const plate = document.getElementById('x_plate').value.trim();
+      const msg = document.getElementById('x_lookup_msg');
+      msg.innerHTML = `<div class="spinner">Looking up…</div>`;
+      try{
+        const t = await apiGet('/api/tickets/active/' + encodeURIComponent(plate));
+        exitTicket = { ...t, plate };
+        msg.innerHTML = '';
         render();
-        const box = document.getElementById('x_lookup_msg');
-        box.innerHTML = `<div class="msg ok">Payment confirmed - barrier open. ${extra||''} ${notified?`Notifying ${notified}: a slot is now free.`:''}</div>`;
+      }catch(e){
+        exitTicket = null;
+        msg.innerHTML = `<div class="msg err">${e.message}</div>`;
+      }
+    };
+    const cashWrap = document.getElementById('x_cash_wrap');
+    const methodSel = document.getElementById('x_method');
+    if(methodSel){
+      const toggle = () => { cashWrap.style.display = methodSel.value==='CASH' ? '' : 'none'; };
+      methodSel.onchange = toggle; toggle();
     }
+    const freeBtn = document.getElementById('x_free');
+    if(freeBtn) freeBtn.onclick = async () => {
+      await settlePayment({});
+    };
+    const payBtn = document.getElementById('x_pay');
+    if(payBtn) payBtn.onclick = async () => {
+      const method = document.getElementById('x_method').value;
+      const body = method==='CASH' ? {method, amount_paid:Number(document.getElementById('x_cash').value||0)} : {method};
+      await settlePayment(body);
+    };
+  }
+  if(active==='admin'){
+    document.getElementById('a_refresh').onclick = render;
+  }
+}
 
+async function settlePayment(body){
+  const res = document.getElementById('x_result');
+  res.innerHTML = `<div class="spinner">Processing payment…</div>`;
+  try{
+    const r = await apiPost(`/api/exit/${exitTicket.ticket_id}/pay`, body);
+    exitTicket = null;
     render();
-        </script>
-    </body>
+    const msg = document.getElementById('x_lookup_msg');
+    const change = r.change>0 ? ` Change due: Ksh ${r.change}.` : '';
+    const notified = r.notified_next ? ` Notifying ${r.notified_next}: a slot is now free.` : '';
+    msg.innerHTML = `<div class="msg ok">Payment confirmed — barrier open.${change}${notified}</div>`;
+  }catch(e){
+    res.innerHTML = `<div class="msg err">${e.message}</div>`;
+  }
+}
+
+render();
+</script>
+</body>
 </html>
+            
