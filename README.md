@@ -1,4 +1,4 @@
-# Modern Parking System
+# Smart Parking
 
 An automated parking management system built for the Kenyan market. Drivers
 can see live slot availability before entry, vehicle entry and exit are
@@ -40,6 +40,7 @@ db.py                 MySQL connection handler (reads DB config from .env)
 Database.sql          Schema + seed data: 7 tables, 40 slots (zones A–D), 5 tariff bands
 ALGORITHMS.docx       Pseudocode for all 7 modules
 Data structure.md     Data structures used and why (arrays, hash maps, queue, etc.)
+usecase.md             Actors, use case diagram and use case summary
 `````
 ## Tech stack
 
